@@ -24,6 +24,7 @@ public class BotInfoController {
         Map<String,String> bot1 = new HashMap<>();
         Map<String,String> bot2 = new HashMap<>();
         bot1.put("name","scott");
+        bot1.put("name2","ssss");
         bot2.put("name","tiger");
         list.add(bot1);
         list.add(bot2);
