@@ -3,7 +3,7 @@ package com.kob.backend.config;
 /**
  * @author chenjikun
  * @version 1.0.0
- * @description TODO
+ * @description SpringBoot中解决跨域问题
  * @date 2023/1/4 14:20
  */
 
