@@ -7,6 +7,7 @@ export default {
     photo: "",
     token: "",
     is_login: false,
+    pulling_info: false,
   },
   getters: {},
   mutations: {
@@ -25,6 +26,10 @@ export default {
         (state.photo = ""),
         (state.token = ""),
         (state.is_login = false);
+      state.pulling_info = false;
+    },
+    updatePullingInfo(state, pulling_info) {
+      state.pulling_info = pulling_info;
     },
   },
   actions: {
@@ -39,7 +44,8 @@ export default {
         success(resp) {
           if (resp.error_message === "success") {
             context.commit("updateToken", resp.token);
-            data.success(resp);
+            localStorage.setItem("jwt_token", resp.token);
+            data.success();
           } else {
             data.error(resp);
           }
@@ -74,6 +80,7 @@ export default {
     },
     logout(context) {
       context.commit("logout");
+      localStorage.removeItem("jwt_token", context.state.token);
     },
   },
   modules: {},

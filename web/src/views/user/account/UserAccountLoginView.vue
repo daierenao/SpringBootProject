@@ -24,7 +24,7 @@
             />
           </div>
           <div class="error-message">{{ error_message }}</div>
-          <button type="submit" class="btn btn-primary">提交</button>
+          <button type="submit" class="btn btn-primary">登录</button>
         </form>
       </div>
     </div>
@@ -53,7 +53,6 @@ export default {
         success() {
           store.dispatch("getInfo", {
             success() {
-              console.log(store.state.user);
               router.push({
                 name: "home",
               });
