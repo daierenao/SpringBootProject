@@ -9,7 +9,10 @@ package com.kob.backend.consumer;
 import com.alibaba.fastjson2.JSONObject;
 import com.kob.backend.consumer.utils.GameMap;
 import com.kob.backend.consumer.utils.JwtAuthentication;
+import com.kob.backend.consumer.utils.Player;
+import com.kob.backend.mapper.RecordMapper;
 import com.kob.backend.mapper.UserMapper;
+import com.kob.backend.pojo.Record;
 import com.kob.backend.pojo.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -28,18 +31,20 @@ import java.util.concurrent.CopyOnWriteArraySet;
 public class WebSocketServer {
 
     private static UserMapper userMapper;
-
+    public static RecordMapper recordMapper;
     @Autowired
     public void setUserMapper(UserMapper userMapper){
         WebSocketServer.userMapper = userMapper;
     }
-
+    @Autowired
+    public void setRecordMapper(RecordMapper recordMapper) { WebSocketServer.recordMapper = recordMapper;};
     //维护已经建立的所有链接，静态可以所有对象共享 线程安全
-    private static final ConcurrentHashMap<Integer,WebSocketServer> users = new ConcurrentHashMap<>();
+    public static final ConcurrentHashMap<Integer,WebSocketServer> users = new ConcurrentHashMap<>();
     //匹配池
     private static final CopyOnWriteArraySet<User> matchPool = new CopyOnWriteArraySet<>();
     private User user;
     private Session session = null; //维护WebSocket链接
+    private GameMap gameMap = null; //每个链接都有一个gamemap
 
     @OnOpen
     public void onOpen(Session session, @PathParam("token") String token) throws IOException {
@@ -77,22 +82,36 @@ public class WebSocketServer {
             matchPool.remove(a);
             matchPool.remove(b);
 
-            GameMap gameMap = new GameMap(13, 14, 30);
+            GameMap gameMap = new GameMap(13, 14, 20,a.getId(),b.getId());
 
             gameMap.createMap();
+            users.get(a.getId()).gameMap = gameMap;
+            users.get(b.getId()).gameMap = gameMap;
+            gameMap.start();
+
+            JSONObject respGame = new JSONObject();
+
+            respGame.put("a_id" , gameMap.getPlayerA().getId());
+            respGame.put("b_id" , gameMap.getPlayerB().getId());
+            respGame.put("a_sx",gameMap.getPlayerA().getSx());
+            respGame.put("a_sy",gameMap.getPlayerA().getSy());
+            respGame.put("b_sx",gameMap.getPlayerA().getSx());
+            respGame.put("b_sy",gameMap.getPlayerA().getSy());
+            respGame.put("map",gameMap.getG());
+
 
             JSONObject resA = new JSONObject();
             resA.put("event","start-matching");
             resA.put("opponent_username",b.getUsername());
             resA.put("opponent_photo",b.getPhoto());
-            resA.put("gamemap", gameMap.getG());
+            resA.put("game", respGame);
             users.get(a.getId()).sendMessage(resA.toJSONString());
 
             JSONObject resB = new JSONObject();
             resB.put("event","start-matching");
             resB.put("opponent_username",a.getUsername());
             resB.put("opponent_photo",a.getPhoto());
-            resB.put("gamemap", gameMap.getG());
+            resB.put("game", respGame);
             users.get(b.getId()).sendMessage(resB.toJSONString());
 
 
@@ -102,8 +121,17 @@ public class WebSocketServer {
         System.out.println("stop matching!");
         matchPool.remove(this.user);
     }
+    public void move(int direction){
+        if(gameMap.getPlayerA().getId().equals(user.getId())){
+            gameMap.setNextStepA(direction);
+        }
+        else if(gameMap.getPlayerB().getId().equals(user.getId())){
+            gameMap.setNextStepB(direction);
+        }
+    }
     @OnMessage
     public void onMessage(String message, Session session) {
+        System.out.println("receive message!");
         // 从Client接收消息
         JSONObject data = JSONObject.parseObject(message);
         String event = data.getString("event");
@@ -112,6 +140,9 @@ public class WebSocketServer {
         }
         else if("stop-matching".equals(event)){
             stopMatching();
+        }
+        else if("move".equals(event)){
+            move(data.getInteger("direction"));
         }
     }
 

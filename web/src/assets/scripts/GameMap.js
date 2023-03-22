@@ -83,20 +83,40 @@ export class GameMap extends AcGameObject {
       }
     // return true;
   }
+  //键盘映射
+  direction_mapping(d){
+    if(d == 0) d = 2;
+    else if(d == 1) d = 3;
+    else if(d == 2) d = 0;
+    else if(d == 3) d = 1;
+    return d;
+  }
   //绑定键盘输入事件
   add_listening_event() {
     this.ctx.canvas.focus();
-    const [snake1, snake2] = this.snakes;
+    // const [snake1, snake2] = this.snakes;
     //根据键盘输入 设置两条蛇的移动方向
     this.ctx.canvas.addEventListener("keydown", (e) => {
-      if (e.key === "w") snake1.set_direction(0);
-      else if (e.key === "d") snake1.set_direction(1);
-      else if (e.key === "s") snake1.set_direction(2);
-      else if (e.key === "a") snake1.set_direction(3);
-      else if (e.key === "ArrowUp") snake2.set_direction(0);
-      else if (e.key === "ArrowRight") snake2.set_direction(1);
-      else if (e.key === "ArrowDown") snake2.set_direction(2);
-      else if (e.key === "ArrowLeft") snake2.set_direction(3);
+      let d = -1;
+      if (e.key === "w") d = 0;
+      else if (e.key === "d") d = 1;
+      else if (e.key === "s") d = 2;
+      else if (e.key === "a") d = 3;
+      // else if (e.key === "ArrowUp") snake2.set_direction(0);
+      // else if (e.key === "ArrowRight") snake2.set_direction(1);
+      // else if (e.key === "ArrowDown") snake2.set_direction(2);
+      // else if (e.key === "ArrowLeft") snake2.set_direction(3);
+      if (d >= 0) {
+        if(this.store.state.user.id == this.store.state.pk.b_id)
+        d = this.direction_mapping(d);
+        //如果获取到前端输入 则向后端发送移动请求
+        this.store.state.pk.socket.send(
+          JSON.stringify({
+            event: "move",
+            direction: d,
+          })
+        );
+      }
     });
   }
   start() {

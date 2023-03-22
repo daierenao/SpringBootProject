@@ -40,6 +40,7 @@ export class Snake extends AcGameObject {
   set_direction(d) {
     this.directions = d;
   }
+
   //判断是否增长
   check_tail_increasing() {
     if (this.step <= 10) return true;
@@ -48,7 +49,7 @@ export class Snake extends AcGameObject {
   }
   //将状态更新到下一回合
   next_step() {
-    //每次移动创建一个虚拟的蛇头，该舌头移动后，将原蛇头移动到该蛇头上
+    //每次移动创建一个虚拟的蛇头，该蛇头移动后，将原蛇头移动到该蛇头上
     const d = this.directions;
 
     this.next_cell = new Cell(
@@ -66,10 +67,10 @@ export class Snake extends AcGameObject {
       this.cells[i] = JSON.parse(JSON.stringify(this.cells[i - 1])); //避免重复引用
     }
 
-    if (!this.gamemap.check_valid(this.next_cell)) {
-      //如果下一步撞墙或撞到蛇 则蛇死亡
-      this.status = "die";
-    }
+    // if (!this.gamemap.check_valid(this.next_cell)) {
+    //   //如果下一步撞墙或撞到蛇 则蛇死亡
+    //   this.status = "die";
+    // }
   }
   update_move() {
     //移动距离等于速度乘以时间 ， 这里的时间是两帧之间的间隔 单位是毫秒
