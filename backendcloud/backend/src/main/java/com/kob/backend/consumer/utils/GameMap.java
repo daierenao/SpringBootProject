@@ -5,6 +5,7 @@ import com.alibaba.fastjson2.JSONObject;
 import com.kob.backend.consumer.WebSocketServer;
 import com.kob.backend.pojo.Record;
 import org.springframework.security.core.parameters.P;
+import sun.applet.AppletResourceLoader;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -206,7 +207,9 @@ public class GameMap extends Thread{
 
     }
     private void sendAllMessage(String message){ //向两个Client发送信息
+        if(WebSocketServer.users.get(PlayerA.getId()) != null)
         WebSocketServer.users.get(PlayerA.getId()).sendMessage(message);
+        if(WebSocketServer.users.get(PlayerB.getId()) != null)
         WebSocketServer.users.get(PlayerB.getId()).sendMessage(message);
     }
     private void sendMove(){ //向两个Client发送移动信息
