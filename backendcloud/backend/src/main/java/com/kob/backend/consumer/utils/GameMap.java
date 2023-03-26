@@ -3,8 +3,11 @@ package com.kob.backend.consumer.utils;
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONObject;
 import com.kob.backend.consumer.WebSocketServer;
+import com.kob.backend.pojo.Bot;
 import com.kob.backend.pojo.Record;
 import org.springframework.security.core.parameters.P;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import sun.applet.AppletResourceLoader;
 
 import java.util.ArrayList;
@@ -32,6 +35,7 @@ public class GameMap extends Thread{
     private ReentrantLock lock = new ReentrantLock();
     private String status = "playing"; //playing表示游戏正在进行 , finished表示游戏结束
     private String loser = "all" ; //all表示平局 A：A输 B：B输
+    private String addBotUrl = "http://127.0.0.1:3002/bot/add/";
     public void setNextStepA(Integer nextStepA) {
         lock.lock();
         try {
@@ -54,13 +58,24 @@ public class GameMap extends Thread{
     }
 
 
-    public GameMap(Integer rows, Integer cols, Integer inner_walls, Integer idA, Integer idB) {
+    public GameMap(Integer rows, Integer cols, Integer inner_walls, Integer idA, Bot botA, Integer idB , Bot botB) {
         this.rows = rows;
         this.cols = cols;
         this.inner_walls = inner_walls;
         this.g = new int[rows][cols];
-        this.PlayerA = new Player(idA, this.rows - 2, 1, new ArrayList<>());
-        this.PlayerB = new Player(idB, 1, this.cols - 2, new ArrayList<>());
+        Integer aBotId = -1, bBotId = -1;
+        String aBotCode = "" , bBotCode = "";
+        if(botA != null){
+            aBotId = botA.getId();
+            aBotCode = botA.getContent();
+        }
+        if(botB != null){
+            bBotId = botB.getId();
+            bBotCode = botB.getContent();
+        }
+
+        this.PlayerA = new Player(idA, aBotId , aBotCode,this.rows - 2, 1, new ArrayList<>());
+        this.PlayerB = new Player(idB, bBotId, bBotCode,1, this.cols - 2, new ArrayList<>());
     }
 
     public Player getPlayerA() {
@@ -116,7 +131,7 @@ public class GameMap extends Thread{
         for (int i = 0; i < 4; i++) {
             int x = sx + dx[i],
                     y = sy + dy[i];
-            if (x >= 0 && x <= this.rows && y >= 0 && y <= this.cols && g[x][y] == 0) {
+            if (x >= 0 && x < this.rows && y >= 0 && y < this.cols && g[x][y] == 0) {
                 if (this.check_connectivity(x, y, ex, ey)) {
                     g[sx][sy] = 0; //恢复现场
                     return true;
@@ -135,6 +150,35 @@ public class GameMap extends Thread{
             }
         }
     }
+    //将当前对局信息，编码为字符串 地图#my.sx#my.sy#(我的操作)#you.sx#you.sy#(你的操作)
+    private String getInput(Player player){
+        Player me = player , you = null;
+        if(player.getId().equals(PlayerA.getId())){
+            me = PlayerA;
+            you = PlayerB;
+        }
+        else if(player.getId().equals(PlayerB.getId())){
+            me = PlayerB;
+            you = PlayerA;
+        }
+        return getMapString() + "#" +
+                me.getSx() + "#" +
+                me.getSy() + "#(" +
+                me.getStepsString() + ")#" +
+                you.getSx() + "#" +
+                you.getSy() + "#(" +
+                you.getStepsString() + ")";
+
+    }
+
+    private void sendBotCode(Player player){
+        if(player.getBotId().equals(-1)) return; //如果人来对战 则不需要传bot代码
+        MultiValueMap<String , String> data = new LinkedMultiValueMap<>();
+        data.add("user_id",player.getId().toString());
+        data.add("bot_code",player.getBotCode());
+        data.add("input",getInput(player));
+        WebSocketServer.restTemplate.postForObject(addBotUrl,data,String.class);
+    }
 
     public boolean nextStep(){ //等待两名玩家的下一步操作 , 这里设置如果双方五秒内没有给出操作 则判断输赢
         try {
@@ -142,6 +186,10 @@ public class GameMap extends Thread{
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+
+        sendBotCode(PlayerA);
+        sendBotCode(PlayerB); //向BotRunningSystem传入bot代码获取输入
+
         for (int i = 0; i < 50; i++) {
             try {
                 Thread.sleep(100);

@@ -3,6 +3,7 @@ package com.kob.matchingsystem.service.impl;
 import com.kob.matchingsystem.service.MatchingService;
 import com.kob.matchingsystem.service.impl.utils.MatchingPool;
 import com.kob.matchingsystem.service.impl.utils.Player;
+import org.omg.CORBA.INTERNAL;
 import org.springframework.stereotype.Service;
 
 /**
@@ -18,9 +19,9 @@ public class MatchingServiceImpl implements MatchingService {
 
 
     @Override
-    public String addPlayer(Integer userId, Integer rating) {
+    public String addPlayer(Integer userId, Integer rating, Integer bot_id) {
         System.out.println("addPlayer: " + userId + " " + rating);
-        matchingpool.addPlayer(userId,rating);
+        matchingpool.addPlayer(userId,rating,bot_id);
         return "addPlayer successfully";
     }
 

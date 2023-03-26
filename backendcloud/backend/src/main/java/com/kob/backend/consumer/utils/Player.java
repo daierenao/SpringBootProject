@@ -1,6 +1,7 @@
 package com.kob.backend.consumer.utils;
 
 
+import jdk.internal.org.objectweb.asm.tree.InnerClassNode;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -20,6 +21,8 @@ import java.util.List;
 @NoArgsConstructor
 public class Player {
     private Integer id;
+    private Integer botId;
+    private String botCode; //bot作战代码
     private Integer sx;
     private Integer sy;
     private List<Integer> steps; //走过的路径

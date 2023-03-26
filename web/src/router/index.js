@@ -90,6 +90,7 @@ router.beforeEach((to, from, next) => {
   if (jwt_token) {
     store.commit("updateToken", jwt_token);
     store.commit("updatePullingInfo", true);
+    store.commit("updateLoser", "none");
     store.dispatch("getInfo", {
       success() {},
       error() {},
