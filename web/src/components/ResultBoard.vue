@@ -10,7 +10,10 @@
         $store.state.pk.a_id == $store.state.user.id
       "
     >
-      Lose
+      <div>Lose</div>
+      <div class="result-board-text-rating">
+        排名:{{ $store.state.user.rating }}(-2)
+      </div>
     </div>
     <div
       class="result-board-text"
@@ -19,9 +22,17 @@
         $store.state.pk.b_id == $store.state.user.id
       "
     >
-      Lose
+      <div>Lose</div>
+      <div class="result-board-text-rating">
+        排名:{{ $store.state.user.rating }}(-2)
+      </div>
     </div>
-    <div class="result-board-text" v-else>Win</div>
+    <div class="result-board-text" v-else>
+      <div>Win</div>
+      <div class="result-board-text-rating">
+        排名:{{ $store.state.user.rating }}(+5)
+      </div>
+    </div>
     <div class="result-board-btn">
       <button @click="restart" type="button" class="btn btn-warning">
         再来一局！
@@ -31,7 +42,7 @@
 </template>
 
 <script>
-import { useStore } from "vuex"
+import { useStore } from "vuex";
 
 export default {
   setup() {
@@ -54,7 +65,7 @@ export default {
 
 <style scoped>
 .result-board {
-  height: 30vh;
+  height: 45vh;
   width: 30vw;
   background-color: rgba(50, 50, 50, 0.5);
   position: absolute;
@@ -68,6 +79,10 @@ export default {
   font-style: italic;
   font-weight: 600;
   padding-top: 5vh;
+}
+.result-board-text-rating {
+  font-size: 30px;
+  padding-top: 3vh;
 }
 .result-board-btn {
   padding-top: 6vh;

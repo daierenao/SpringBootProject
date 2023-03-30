@@ -1,0 +1,18 @@
+<template>
+  <PlayGround> </PlayGround>
+</template>
+
+<script>
+import PlayGround from "../../components/PlayGround";
+
+export default {
+  components: {
+    PlayGround,
+  },
+  setup() {
+    //键盘映射
+  },
+};
+</script>
+
+<style scoped></style>

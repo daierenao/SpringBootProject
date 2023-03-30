@@ -5,6 +5,7 @@ export default {
     id: "",
     username: "",
     photo: "",
+    rating: 0,
     token: "",
     is_login: false,
     pulling_info: false,
@@ -16,6 +17,7 @@ export default {
         (state.username = user.username),
         (state.photo = user.photo),
         (state.is_login = user.is_login);
+      state.rating = user.rating;
     },
     updateToken(state, token) {
       state.token = token;
@@ -24,6 +26,7 @@ export default {
       (state.id = ""),
         (state.username = ""),
         (state.photo = ""),
+        (state.rating = 0),
         (state.token = ""),
         (state.is_login = false);
       state.pulling_info = false;
